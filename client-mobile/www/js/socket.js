@@ -4,18 +4,20 @@ angular.module('Pronto.socket', [])
   var socketFact = {};
 
   //hacky way to make this work in developer environments at specified port number
-  socketFact.host = "10.8.4.60:3000";
   //socketFact.host = $location.host() !== "localhost" ? $location.host() : "localhost:3000";
+
+  socketFact.host = "10.8.4.60:3000";
+  var socket = io.connect(socketFact.host);
 
   socketFact.connect = function (nameSpace) {
     if (!nameSpace) {
-      return io.connect(this.host, { forceNew: true });
+      socket = io.connect(socketFact.host, { forceNew: true });
+      return io.connect(socketFact.host, { forceNew: true });
     } else {
-      return io.connect(this.host + "/" + nameSpace);
+      socket = io.connect(socketFact.host + "/" + nameSpace);
+      return io.connect(socketFact.host + "/" + nameSpace);
     }
   };
-
-  var socket = io.connect('10.8.4.60:3000');
 
   socketFact.on = function(eventName, callback) {
     socket.on(eventName, function() {

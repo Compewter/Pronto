@@ -28,7 +28,7 @@ angular.module('Pronto.chat',[])
 
 }])
 
-.controller('ChatCtrl', ['$rootScope', '$state', '$scope', 'ChatFactory', 'AuthFactory', function ($rootScope, $state, $scope, ChatFactory, AuthFactory) {
+.controller('ChatCtrl', ['$rootScope', '$state', '$scope', 'ChatFactory', 'AuthFactory', 'SocketFactory' ,function ($rootScope, $state, $scope, ChatFactory, AuthFactory, SocketFactory) {
 
   $scope.messages = [];
 
@@ -36,6 +36,15 @@ angular.module('Pronto.chat',[])
     userName: $rootScope.user.name,
     text: ''
   };
+  
+  var socket = io.connect('10.8.4.60:3000/chat');
+
+  socket.on('numUsers', function(numUsers){
+    console.log(numUsers);
+    $scope.$apply(function(){
+      $scope.numUsers = numUsers.num;
+    });
+  });
 
   $scope.leaveChat = function (logout) {
     $scope.messages = [];
@@ -57,6 +66,7 @@ angular.module('Pronto.chat',[])
   };
 
   $scope.sendMessage = function () {
+    SocketFactory.emit('test',{test:"test"});
     if( $scope.message ){
       ChatFactory.postMessage(this.message);
       $scope.messages.push({

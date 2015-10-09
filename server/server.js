@@ -36,6 +36,9 @@ app.use("/", express.static(__dirname + '/../client-web'));
 // Sockets Connection
 io.sockets.on('connection', function(socket){
   console.log('Socket '+ socket.id +' connected.');
+  socket.on('test',function(){
+      console.log('test received');
+    });
   socket.on('disconnect', function(){
     console.log('Socket '+ socket.id +' disconnected.');
     socket.disconnect();
@@ -74,24 +77,40 @@ io.of('/match').on('connection', function (socket) {
 // Sockets Chatting Namespace
 io.of('/chat').on('connection', function (socket) {
   console.log(socket.id + "connected to /chat");
+
   socket.on('loadChat', function (chatRoomId) {
-    socket.join(chatRoomId);
+
+    socket.join(chatRoomId, function(err){
+      //emit number of users in chatroom
+      if(err){
+        console.log(err);
+      }else{
+        console.log("joining "+ chatRoomId);
+        var room = io.nsps['/chat'].adapter.rooms[chatRoomId];
+        var num = Object.keys(room).length;
+        io.in(chatRoomId).emit('numUsers', {num: num});
+      }
+    });
+
     socket.on('message', function (message) {
-      console.log('Emitted from client to server');
       socket.to(chatRoomId).broadcast.emit('message', message);
       chatCtrl.addMessage(chatRoomId, message);
     });
   });
+
   socket.on('leaveChat', function (chatRoomId) {
-    //socket.to(chatRoomId).broadcast.emit('leaveChat');
+
     socket.leave(chatRoomId);
+    //emit number of users in chatroom
+    var room = io.nsps['/chat'].adapter.rooms[chatRoomId];
+    var num = Object.keys(room).length;
+    socket.to(chatRoomId).broadcast.emit('numUsers', {num: num});
+
     var room = io.nsps['/chat'].adapter.rooms[chatRoomId];
     if (!room) {
       chatCtrl.removeChat(chatRoomId);
     }
-    // for( var sock in room ) {
-    //   io.sockets.connected[sock].leave(chatRoomId);
-    // }
+
   });
 });
 
