@@ -88,7 +88,7 @@ io.of('/chat').on('connection', function (socket) {
         console.log("joining "+ chatRoomId);
         var room = io.nsps['/chat'].adapter.rooms[chatRoomId];
         var num = Object.keys(room).length;
-        io.in(chatRoomId).emit('numUsers', {num: num});
+        io.of('/chat').emit('numUsers', {num: num});
       }
     });
 
